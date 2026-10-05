@@ -10,6 +10,7 @@ import * as bcrypt from 'bcrypt';
 
 import { User } from './entities/user.entity';
 import { CreateUserDTO } from './dto/create-user.dto';
+import { UserResponseDTO } from './dto/user-response.dto';
 
 @Injectable()
 export class UsersService {
@@ -18,8 +19,9 @@ export class UsersService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  async findAll(): Promise<User[]> {
-    return this.userRepository.find();
+  async findAll(): Promise<UserResponseDTO[]> {
+    const allUsers = await this.userRepository.find();
+    return allUsers.map((user) => new UserResponseDTO(user));
   }
 
   async createUser(createUserDto: CreateUserDTO) {
@@ -46,6 +48,8 @@ export class UsersService {
       passwordHash,
     });
 
-    return this.userRepository.save(user);
+    const saveUser = await this.userRepository.save(user);
+
+    return new UserResponseDTO(saveUser);
   }
 }
