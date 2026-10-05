@@ -39,6 +39,7 @@ export class User {
     type: 'decimal',
     precision: 12,
     scale: 2,
+    default: 0,
   })
   initialBalance!: number;
   
@@ -46,6 +47,7 @@ export class User {
     type: 'decimal',
     precision: 12,
     scale: 2,
+    default: 0,
   })
   currentBalance!: number;
 
