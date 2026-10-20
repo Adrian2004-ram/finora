@@ -7,6 +7,8 @@ import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { DataSource } from 'typeorm';
 import { TransactionResponseDto } from './dto/transactions-response.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
+import { Category } from 'src/category/entities/category.entity';
+import { TransactionType } from './enums/transaction-type.enum';
 
 @Injectable()
 export class TransactionsService {
@@ -27,6 +29,7 @@ export class TransactionsService {
     return this.dataSource.transaction(async (manager) => {
       const userRepository = manager.getRepository(User);
       const transactionRepository = manager.getRepository(Transaction);
+      const categoryRepository = manager.getRepository(Category);
 
       const user = await userRepository.findOne({
         where: { id: userId },
@@ -37,10 +40,21 @@ export class TransactionsService {
         throw new NotFoundException('Usuario no encontrado');
       }
 
+      const category = await categoryRepository.findOne({
+        where: {
+          id: createTransactionDto.categoryId,
+          user: { id: userId },
+        },
+      });
+
+      if (!category) {
+        throw new NotFoundException('Categoria no encontrada');
+      }
+
       const amount = createTransactionDto.amount;
 
       const balanceChange =
-        createTransactionDto.type === 'INCOME' ? amount : -amount;
+        createTransactionDto.type === TransactionType.INCOME ? amount : -amount;
 
       const currentBalance = Number(user.currentBalance);
 
@@ -54,6 +68,7 @@ export class TransactionsService {
         description: createTransactionDto.description,
         date: createTransactionDto.date,
         user,
+        category,
       });
 
       await transactionRepository.save(transaction);
@@ -67,6 +82,7 @@ export class TransactionsService {
   async findAll(userId: string): Promise<TransactionResponseDto[]> {
     const transaction = await this.transactionRepository.find({
       where: { user: { id: userId } },
+      relations: { category: true },
       order: {
         date: 'DESC',
         createdAt: 'DESC',
@@ -86,6 +102,7 @@ export class TransactionsService {
       },
       relations: {
         user: true,
+        category: true,
       },
     });
 
@@ -98,10 +115,11 @@ export class TransactionsService {
 
   // DELETE TRANSACTION
 
-  async deleteTransaction(id: string, userId: string) {
+  async delete(id: string, userId: string) {
     await this.dataSource.transaction(async (manager) => {
       const userRepository = manager.getRepository(User);
       const transactionRepository = manager.getRepository(Transaction);
+      const categoryRepository = manager.getRepository(Category);
 
       const user = await userRepository.findOne({
         where: { id: userId },
@@ -117,6 +135,7 @@ export class TransactionsService {
           id,
           user: { id: userId },
         },
+        relations: { category: true },
       });
 
       if (!transaction) {
@@ -125,7 +144,8 @@ export class TransactionsService {
 
       const amount = Number(transaction.amount);
 
-      const balanceChange = transaction.type === 'INCOME' ? -amount : amount;
+      const balanceChange =
+        transaction.type === TransactionType.INCOME ? -amount : amount;
 
       user.currentBalance = Number(
         (Number(user.currentBalance) + balanceChange).toFixed(2),
@@ -146,6 +166,7 @@ export class TransactionsService {
     return this.dataSource.transaction(async (manager) => {
       const userRepository = manager.getRepository(User);
       const transactionRepository = manager.getRepository(Transaction);
+      const categoryRepository = manager.getRepository(Category);
 
       const user = await userRepository.findOne({
         where: { id: userId },
@@ -163,10 +184,26 @@ export class TransactionsService {
             id: userId,
           },
         },
+        relations: { category: true },
       });
 
       if (!transaction) {
         throw new NotFoundException('Transacción no encontrada');
+      }
+
+      if (dto.categoryId) {
+        const category = await categoryRepository.findOne({
+          where: {
+            id: dto.categoryId,
+            user: { id: userId },
+          },
+        });
+
+        if (!category) {
+          throw new NotFoundException('Categoria no encontrada');
+        }
+
+        transaction.category = category;
       }
 
       // Guardamos los valores anteriores
@@ -174,15 +211,20 @@ export class TransactionsService {
       const oldType = transaction.type;
 
       // Actualizamos los datos enviados
-      Object.assign(transaction, dto);
+      if (dto.amount !== undefined) transaction.amount = dto.amount;
+      if (dto.type !== undefined) transaction.type = dto.type;
+      if (dto.description !== undefined) transaction.description = dto.description;
+      if (dto.date !== undefined) transaction.date = dto.date;
 
       // Si cambia amount o type, recalculamos el balance
       const newAmount = Number(transaction.amount);
       const newType = transaction.type;
 
-      const oldBalanceChange = oldType === 'INCOME' ? oldAmount : -oldAmount;
+      const oldBalanceChange =
+        oldType === TransactionType.INCOME ? oldAmount : -oldAmount;
 
-      const newBalanceChange = newType === 'INCOME' ? newAmount : -newAmount;
+      const newBalanceChange =
+        newType === TransactionType.INCOME ? newAmount : -newAmount;
 
       const balanceDifference = newBalanceChange - oldBalanceChange;
 

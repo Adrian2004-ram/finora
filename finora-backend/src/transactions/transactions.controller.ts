@@ -51,7 +51,7 @@ export class TransactionsController {
     @Param('id') id: string,
     @Req() req: { user: AuthenticatedUser },
   ) {
-    return this.transactionsService.deleteTransaction(id, req.user.userId);
+    return this.transactionsService.delete(id, req.user.userId);
   }
 
   @Patch(':id')

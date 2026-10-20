@@ -1,4 +1,4 @@
-import { IsDateString, IsEnum, IsNotEmpty, IsNumber, IsString, MaxLength, MinLength } from "class-validator";
+import { IsDateString, IsEnum, IsNotEmpty, IsNumber, IsString, IsUUID, MaxLength, MinLength } from "class-validator";
 import { TransactionType } from "../enums/transaction-type.enum";
 
 
@@ -18,5 +18,8 @@ export class CreateTransactionDto {
 
     @IsDateString()
     date!: string;
+
+    @IsUUID()
+    categoryId!: string;
 
 }

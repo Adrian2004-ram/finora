@@ -1,4 +1,5 @@
 import { User } from "src/users/entities/user.entity";
+import { Category } from "src/category/entities/category.entity";
 import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { TransactionType } from "../enums/transaction-type.enum";
 
@@ -37,6 +38,12 @@ export class Transaction {
         onDelete: 'CASCADE',
     })
     user!: User;
+
+    @ManyToOne(() => Category, (category) => category.transactions, {
+        nullable: false,
+        onDelete: 'RESTRICT',
+    })
+    category!: Category;
 
     @CreateDateColumn()
     createdAt!: Date;

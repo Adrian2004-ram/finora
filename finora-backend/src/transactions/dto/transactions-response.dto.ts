@@ -7,6 +7,7 @@ export class TransactionResponseDto {
   type!: TransactionType;
   description!: string;
   date!: string;
+  categoryId!: string;
   createdAt!: Date;
   updatedAt!: Date;
 
@@ -16,6 +17,7 @@ export class TransactionResponseDto {
     this.type = transaction.type;
     this.description = transaction.description;
     this.date = transaction.date;
+    this.categoryId = transaction.category.id;
     this.createdAt = transaction.createdAt;
     this.updatedAt = transaction.updatedAt;
   }

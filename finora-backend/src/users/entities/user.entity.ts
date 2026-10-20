@@ -2,10 +2,13 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { UserRole } from '../enums/user-role.enum';
+import { Transaction } from '../../transactions/entities/transaction.entity';
+import { Category } from '../../category/entities/category.entity';
 
 @Entity('users')
 export class User {
@@ -61,4 +64,10 @@ export class User {
 
   @UpdateDateColumn()
   updatedAt!: Date;
+
+  @OneToMany(() => Transaction, (transaction) => transaction.user)
+  transactions!: Transaction[];
+
+  @OneToMany(() => Category, (category) => category.user)
+  categories!: Category[];
 }
