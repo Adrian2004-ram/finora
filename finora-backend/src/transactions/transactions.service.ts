@@ -8,7 +8,7 @@ import { DataSource } from 'typeorm';
 import { TransactionResponseDto } from './dto/transactions-response.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { Category } from 'src/category/entities/category.entity';
-import { TransactionType } from './enums/transaction-type.enum';
+import { TypeTransaction } from './enums/type-transaction.enum';
 
 @Injectable()
 export class TransactionsService {
@@ -40,21 +40,43 @@ export class TransactionsService {
         throw new NotFoundException('Usuario no encontrado');
       }
 
-      const category = await categoryRepository.findOne({
-        where: {
-          id: createTransactionDto.categoryId,
-          user: { id: userId },
-        },
-      });
+      let category: Category;
 
-      if (!category) {
-        throw new NotFoundException('Categoria no encontrada');
+      if (createTransactionDto.categoryId) {
+        const foundCategory = await categoryRepository.findOne({
+          where: {
+            id: createTransactionDto.categoryId,
+            user: { id: userId },
+          },
+        });
+
+        if (!foundCategory) {
+          throw new NotFoundException('Categoría no encontrada');
+        }
+
+        category = foundCategory;
+      } else {
+        const defaultCategory = await categoryRepository.findOne({
+          where: {
+            name: 'Sin categoria',
+            isSystem: true,
+            user: { id: userId },
+          },
+        });
+
+        if (!defaultCategory) {
+          throw new NotFoundException(
+            'No se encontró la categoría predeterminada del usuario',
+          );
+        }
+
+        category = defaultCategory;
       }
 
       const amount = createTransactionDto.amount;
 
       const balanceChange =
-        createTransactionDto.type === TransactionType.INCOME ? amount : -amount;
+        createTransactionDto.type === TypeTransaction.INCOME ? amount : -amount;
 
       const currentBalance = Number(user.currentBalance);
 
@@ -101,7 +123,6 @@ export class TransactionsService {
         user: { id: userId },
       },
       relations: {
-        user: true,
         category: true,
       },
     });
@@ -119,7 +140,6 @@ export class TransactionsService {
     await this.dataSource.transaction(async (manager) => {
       const userRepository = manager.getRepository(User);
       const transactionRepository = manager.getRepository(Transaction);
-      const categoryRepository = manager.getRepository(Category);
 
       const user = await userRepository.findOne({
         where: { id: userId },
@@ -135,7 +155,6 @@ export class TransactionsService {
           id,
           user: { id: userId },
         },
-        relations: { category: true },
       });
 
       if (!transaction) {
@@ -145,7 +164,7 @@ export class TransactionsService {
       const amount = Number(transaction.amount);
 
       const balanceChange =
-        transaction.type === TransactionType.INCOME ? -amount : amount;
+        transaction.type === TypeTransaction.INCOME ? -amount : amount;
 
       user.currentBalance = Number(
         (Number(user.currentBalance) + balanceChange).toFixed(2),
@@ -213,7 +232,8 @@ export class TransactionsService {
       // Actualizamos los datos enviados
       if (dto.amount !== undefined) transaction.amount = dto.amount;
       if (dto.type !== undefined) transaction.type = dto.type;
-      if (dto.description !== undefined) transaction.description = dto.description;
+      if (dto.description !== undefined)
+        transaction.description = dto.description;
       if (dto.date !== undefined) transaction.date = dto.date;
 
       // Si cambia amount o type, recalculamos el balance
@@ -221,10 +241,10 @@ export class TransactionsService {
       const newType = transaction.type;
 
       const oldBalanceChange =
-        oldType === TransactionType.INCOME ? oldAmount : -oldAmount;
+        oldType === TypeTransaction.INCOME ? oldAmount : -oldAmount;
 
       const newBalanceChange =
-        newType === TransactionType.INCOME ? newAmount : -newAmount;
+        newType === TypeTransaction.INCOME ? newAmount : -newAmount;
 
       const balanceDifference = newBalanceChange - oldBalanceChange;
 

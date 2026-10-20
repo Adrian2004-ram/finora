@@ -1,6 +1,5 @@
 import { IsEnum, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 import { ColorCategory } from '../enums/color-category';
-import { TypeCategory } from '../enums/type-category';
 
 export class UpdateCategoryDto {
   @IsOptional()
@@ -8,10 +7,6 @@ export class UpdateCategoryDto {
   @MinLength(2)
   @MaxLength(100)
   name?: string;
-
-  @IsOptional()
-  @IsEnum(TypeCategory)
-  type?: TypeCategory;
 
   @IsOptional()
   @IsEnum(ColorCategory)

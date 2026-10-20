@@ -1,7 +1,7 @@
 import { User } from "src/users/entities/user.entity";
 import { Category } from "src/category/entities/category.entity";
 import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { TransactionType } from "../enums/transaction-type.enum";
+import { TypeTransaction } from "../enums/type-transaction.enum";
 
 @Entity()
 export class Transaction {
@@ -18,9 +18,9 @@ export class Transaction {
 
     @Column({
         type: 'enum',
-        enum: TransactionType,
+        enum: TypeTransaction,
     })
-    type!: TransactionType;
+    type!: TypeTransaction;
 
     @Column({
         type: 'varchar',
@@ -40,10 +40,10 @@ export class Transaction {
     user!: User;
 
     @ManyToOne(() => Category, (category) => category.transactions, {
-        nullable: false,
+        nullable: true,
         onDelete: 'RESTRICT',
     })
-    category!: Category;
+    category!: Category | null;
 
     @CreateDateColumn()
     createdAt!: Date;

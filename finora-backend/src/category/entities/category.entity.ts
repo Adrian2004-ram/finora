@@ -7,7 +7,6 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { TypeCategory } from '../enums/type-category';
 import { ColorCategory } from '../enums/color-category';
 import { User } from 'src/users/entities/user.entity';
 import { Transaction } from 'src/transactions/entities/transaction.entity';
@@ -19,12 +18,6 @@ export class Category {
 
   @Column({ type: 'varchar', length: 100 })
   name!: string;
-
-  @Column({
-    type: 'enum',
-    enum: TypeCategory,
-  })
-  type!: TypeCategory;
 
   @Column({
     type: 'enum',

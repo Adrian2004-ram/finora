@@ -9,7 +9,7 @@ import {
   MaxLength,
   Min,
 } from 'class-validator';
-import { TransactionType } from '../enums/transaction-type.enum';
+import { TypeTransaction } from '../enums/type-transaction.enum';
 
 export class UpdateTransactionDto {
   @IsOptional()
@@ -18,8 +18,8 @@ export class UpdateTransactionDto {
   amount?: number;
 
   @IsOptional()
-  @IsEnum(TransactionType)
-  type?: TransactionType;
+  @IsEnum(TypeTransaction)
+  type?: TypeTransaction;
 
   @IsOptional()
   @IsString()

@@ -12,7 +12,6 @@ import { User } from 'src/users/entities/user.entity';
 import { CategoryResponseDto } from './dto/category-response.dto';
 import { Transaction } from 'src/transactions/entities/transaction.entity';
 import { ColorCategory } from './enums/color-category';
-import { TypeCategory } from './enums/type-category';
 
 @Injectable()
 export class CategoryService {
@@ -42,7 +41,6 @@ export class CategoryService {
 
       const category = categoryRepository.create({
         name: createCategoryDto.name,
-        type: createCategoryDto.type,
         color: createCategoryDto.color,
         icon: createCategoryDto.icon,
         user,
@@ -161,7 +159,6 @@ export class CategoryService {
     const existingCategory = await categoryRepository.findOne({
       where: {
         name: 'Sin categoria',
-        type: TypeCategory.NO_CATEGORY,
         isSystem: true,
         user: { id: userId },
       },
@@ -179,7 +176,6 @@ export class CategoryService {
     return categoryRepository.save(
       categoryRepository.create({
         name: 'Sin categoria',
-        type: TypeCategory.NO_CATEGORY,
         color: ColorCategory.GRIS,
         icon: 'folder',
         isSystem: true,

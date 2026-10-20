@@ -10,7 +10,6 @@ import { CreateUserDTO } from './dto/create-user.dto';
 import { UserResponseDTO } from './dto/user-response.dto';
 import { Category } from '../category/entities/category.entity';
 import { ColorCategory } from '../category/enums/color-category';
-import { TypeCategory } from '../category/enums/type-category';
 
 @Injectable()
 export class UsersService {
@@ -50,7 +49,6 @@ export class UsersService {
     await this.categoryRepository.save([
       this.categoryRepository.create({
         name: 'Sin categoria',
-        type: TypeCategory.NO_CATEGORY,
         color: ColorCategory.GRIS,
         icon: 'folder',
         isSystem: true,

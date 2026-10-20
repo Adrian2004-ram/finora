@@ -1,13 +1,13 @@
 import { Transaction } from '../entities/transaction.entity';
-import { TransactionType } from '../enums/transaction-type.enum';
+import { TypeTransaction } from '../enums/type-transaction.enum';
 
 export class TransactionResponseDto {
   id!: string;
   amount!: number;
-  type!: TransactionType;
+  type!: TypeTransaction;
   description!: string;
   date!: string;
-  categoryId!: string;
+  categoryId!: string | null;
   createdAt!: Date;
   updatedAt!: Date;
 
@@ -17,7 +17,7 @@ export class TransactionResponseDto {
     this.type = transaction.type;
     this.description = transaction.description;
     this.date = transaction.date;
-    this.categoryId = transaction.category.id;
+    this.categoryId = transaction.category?.id ?? null ;
     this.createdAt = transaction.createdAt;
     this.updatedAt = transaction.updatedAt;
   }
